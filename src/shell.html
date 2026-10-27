@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>飞检依据检索</title>
+<style>/*CSS*/</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 4 2.4 5 5.4.6-4 3.7 1.1 5.4L12 16l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3.5 13.8 10l6.7 2-6.7 2L12 20.5 10.2 14 3.5 12l6.7-2z"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="12" rx="2"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-8A1.5 1.5 0 0 0 5 5.5v10A1.5 1.5 0 0 0 6.5 17H8"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4 14v4.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V14"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 20h14"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4 21 19.5H3z"/><path d="M12 10v4M12 16.8v.2"/></symbol>
+</svg>
+
+<header class="bar glass">
+  <div class="brand"><span class="logo"><svg><use href="#i-search"/></svg></span><b>飞检依据检索</b><span class="sub">单文件版 · 项目内涵 · 临床意义 · 原文溯源</span></div>
+  <nav>
+    <button data-view="search" class="on"><svg><use href="#i-search"/></svg><span>检索</span></button>
+    <button data-view="kb"><svg><use href="#i-book"/></svg><span>知识库</span></button>
+    <button data-view="clips"><svg><use href="#i-star"/></svg><span>收藏</span><i id="clipCount"></i></button>
+    <button data-view="settings"><svg><use href="#i-gear"/></svg><span>设置</span></button>
+  </nav>
+</header>
+
+<main>
+<!-- 检索 -->
+<section id="v-search" class="view on">
+  <div class="card compose">
+    <label class="lbl">问题描述</label>
+    <textarea id="desc" rows="4" placeholder="粘贴检查发现的问题情形，例如：经查，该院为部分患者开展“各种牙拔除术”，同时收取“各种牙拔除术”和“牙槽骨修整术”两项费用。"></textarea>
+    <div class="row between">
+      <div class="examples"><span class="muted">示例</span>
+        <button class="chip ghost" data-ex="0">牙拔除术 / 牙槽骨修整术</button>
+        <button class="chip ghost" data-ex="1">血清胱抑素测定</button>
+      </div>
+      <button id="btnAnalyze" class="btn"><svg><use href="#i-spark"/></svg>识别项目与类型</button>
+    </div>
+    <div class="divider"></div>
+    <div class="row wrap gap">
+      <label class="lbl inline">问题类型</label>
+      <div class="seg" id="qtype">
+        <button data-t="重复收费" class="on">重复收费</button><button data-t="过度检查">过度检查</button><button data-t="过度诊疗">过度诊疗</button><button data-t="其他">其他</button>
+      </div>
+      <span id="analyzeNote" class="muted small"></span>
+    </div>
+    <div class="row wrap gap" style="margin-top:14px">
+      <label class="lbl inline">检索项目</label>
+      <div id="chips" class="chips"></div>
+      <input id="kwInput" class="kw" placeholder="输入项目名后回车添加">
+    </div>
+    <div class="row end" style="margin-top:18px">
+      <button id="btnGo" class="btn primary"><svg><use href="#i-search"/></svg>检索依据原文</button>
+    </div>
+  </div>
+  <div id="keyTip" class="tip" style="margin-top:-4px"></div>
+  <div id="results"></div>
+</section>
+
+<!-- 知识库 -->
+<section id="v-kb" class="view">
+  <div class="card">
+    <div class="row between"><div><h2>内部知识库</h2><p class="muted">上传规范、教材、价格目录等。文件解析后保存在本浏览器 IndexedDB，不上传任何服务器；使用中文二元切分 + BM25 本地检索，无需 Key。</p></div></div>
+    <label class="drop" id="drop">
+      <input type="file" id="file" multiple accept=".pdf,.docx,.txt,.md,.markdown" hidden>
+      <svg><use href="#i-upload"/></svg>
+      <b>拖入或点击选择文件</b><span class="muted small">支持 PDF（文字版，扫描版暂不支持）、Word .docx、TXT、Markdown</span>
+    </label>
+    <div id="uploadMsg" class="small"></div>
+    <div id="bookList" class="books"></div>
+  </div>
+  <div class="card">
+    <h3>在知识库中检索</h3>
+    <div class="row gap"><input id="kbq" class="input" placeholder="如：胱抑素 临床意义"><button id="btnKbq" class="btn">检索</button></div>
+    <div id="kbRes"></div>
+  </div>
+</section>
+
+<!-- 收藏 -->
+<section id="v-clips" class="view">
+  <div class="card">
+    <div class="row between wrap gap"><div><h2>核实记录</h2><p class="muted">收藏的引文按项目归类，可补充核实意见后导出。</p></div>
+      <div class="row gap"><button class="btn" id="expMd"><svg><use href="#i-down"/></svg>导出 Markdown</button><button class="btn primary" id="expDocx"><svg><use href="#i-down"/></svg>导出 Word</button></div></div>
+    <div id="clipList"></div>
+    <label class="lbl" style="margin-top:18px">核实意见（可选）</label>
+    <textarea id="note" rows="4" placeholder="根据上述依据原文的对照结论……"></textarea>
+    <div class="row end"><button class="btn ghost" id="clearClips"><svg><use href="#i-trash"/></svg>清空收藏</button></div>
+  </div>
+</section>
+
+<!-- 设置 -->
+<section id="v-settings" class="view">
+  <div class="card narrow">
+    <h2>设置</h2>
+    <div class="field"><label class="lbl">DeepSeek API Key</label>
+      <div class="row gap"><input id="apiKey" type="password" class="input" autocomplete="off" placeholder="sk-…"><button class="btn" id="btnTest">测试连接</button></div>
+      <p class="muted small" id="keyState">仅保存在本浏览器 localStorage，只发送给 api.deepseek.com。公共电脑用完请清除。</p></div>
+    <div class="field row between"><div><div class="lbl">深度思考</div><p class="muted small">开启后启用 deepseek-flash 的思考模式（thinking），更慢但推理更细。</p></div>
+      <label class="switch"><input type="checkbox" id="thinking"><span></span></label></div>
+    <div class="field" id="tempField"><div class="row between"><label class="lbl">温度</label><b id="tempVal">0.7</b></div>
+      <input type="range" id="temp" min="0" max="2" step="0.1" value="0.7">
+      <p class="muted small" id="tempHint">越低越稳定。摘录原文建议 0–0.3。</p></div>
+    <div class="field row between"><div><div class="lbl">AI 清洗网页</div><p class="muted small">有 Key 时，让 AI 从正文中逐字摘录相关原文（单独显示，并自动校验是否逐字出现）。</p></div>
+      <label class="switch"><input type="checkbox" id="useAi"><span></span></label></div>
+    <div class="field row between"><div><div class="lbl">DeepSeek 网页搜索 <span class="badge warn">收费</span></div><p class="muted small">单文件版的网页搜索只能通过 DeepSeek Search API（浏览器无法直接调用百度等搜索引擎）。按成功请求计费（官方价 $0.75 / 千次），每个项目约 2 次。关闭则只检索知识库。</p></div>
+      <label class="switch"><input type="checkbox" id="dsSearch"><span></span></label></div>
+    <div class="field row between"><div><div class="lbl">DeepSeek 网页抓取 <span class="badge warn">收费</span></div><p class="muted small">用 DeepSeek Fetch API 抓取搜索结果的全文（Markdown）。按成功请求计费（$0.75 / 千次），每个项目约 3–8 次。关闭则只用搜索结果自带的摘要与正文。</p></div>
+      <label class="switch"><input type="checkbox" id="dsFetch"><span></span></label></div>
+    <div class="field row between"><div><div class="lbl">清除本地数据</div><p class="muted small">删除 Key、设置、收藏与知识库。</p></div><button class="btn ghost" id="btnWipe"><svg><use href="#i-trash"/></svg>清除</button></div>
+    <div class="field"><div class="row between"><label class="lbl">每个项目抓取网页数（收费抓取）</label><b id="mpVal">4</b></div>
+      <input type="range" id="maxPages" min="1" max="8" step="1" value="4"></div>
+    <div class="row end"><button class="btn primary" id="btnSave">保存设置</button></div>
+  </div>
+</section>
+</main>
+<div id="toast"></div>
+<!--LIBS-->
+<script>/*APP*/</script>
+</body>
+</html>
